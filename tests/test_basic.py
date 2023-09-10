@@ -1,5 +1,6 @@
 import pytest
-import project  # on import will print something from __init__ file
+import project.graph_module as gm
+import os
 
 
 def setup_module(module):
