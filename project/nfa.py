@@ -1,7 +1,7 @@
 from pyformlang.finite_automaton import *
 
 
-def min_nfa_for_graph(graph, start_states: set = None, final_states: set = None):
+def build_nfa_for_graph(graph, start_states: set = None, final_states: set = None):
     nfa = NondeterministicFiniteAutomaton()
 
     for edge in graph.edges(data=True):
