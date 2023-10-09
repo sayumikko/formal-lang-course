@@ -4,6 +4,7 @@ from scipy import sparse
 
 class BooleanFiniteAutomaton:
     number_of_states: int
+    states: set
     start_states: set
     final_states: set
     states_indices: dict
@@ -12,6 +13,7 @@ class BooleanFiniteAutomaton:
     def __init__(self, nfa: NondeterministicFiniteAutomaton = None):
         if nfa is None:
             self.number_of_states = 0
+            self.states = set()
             self.start_states = set()
             self.final_states = set()
             self.states_indices = {}
@@ -19,6 +21,7 @@ class BooleanFiniteAutomaton:
 
         else:
             self.number_of_states = len(nfa.states)
+            self.states = nfa.states
             self.start_states = nfa.start_states
             self.final_states = nfa.final_states
             self.states_indices = {
