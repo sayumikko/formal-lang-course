@@ -1,10 +1,11 @@
 import cfpq_data
 
 from project.nfa_bool_matrices import BooleanFiniteAutomaton
-from project.regular_path_query import regular_path_querying
+from project.regular_path_query import tensor_rpq
 
 from pyformlang.finite_automaton import NondeterministicFiniteAutomaton
 from pyformlang.regular_expression import Regex
+from scipy.sparse import dok_matrix
 
 
 def test_bfa_for_empty_nfa():
@@ -45,7 +46,7 @@ def test_transitive_closure():
     )
 
     bool_matrix = BooleanFiniteAutomaton(nfa)
-    transitive_closure = bool_matrix.get_transitive_closure()
+    transitive_closure = bool_matrix.get_transitive_closure(dok_matrix)
     assert transitive_closure.sum() == transitive_closure.size
 
 
@@ -89,5 +90,5 @@ def test_intersect():
 def test_regular_path_query():
     graph = cfpq_data.labeled_two_cycles_graph(3, 3, labels=("a", "b"), common_node=0)
     regex = Regex("(a|b)(aa)*")
-    result = regular_path_querying(graph, regex, {0}, {1})
+    result = tensor_rpq(graph, regex, {0}, {1})
     assert result == {(0, 1)}
