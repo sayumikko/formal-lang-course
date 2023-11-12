@@ -1,6 +1,13 @@
 from pyformlang.finite_automaton import State
 from scipy import sparse
-from scipy.sparse import block_diag, csr_matrix, vstack
+from scipy.sparse import (
+    block_diag,
+    vstack,
+    csr_matrix,
+    dok_matrix,
+    lil_matrix,
+    csc_matrix,
+)
 import numpy
 
 from project.nfa_bool_matrices import *
@@ -10,6 +17,7 @@ def constraint_bfs(
     graph: BooleanFiniteAutomaton,
     regex: BooleanFiniteAutomaton,
     for_each_node: bool = False,
+    matrix_type=csr_matrix,
 ):
     direct_sum = {}
 
@@ -19,12 +27,12 @@ def constraint_bfs(
         )
 
     front = (
-        vstack([create_front(graph, regex) for st in graph.start_states])
+        vstack([create_front(graph, regex, matrix_type) for st in graph.start_states])
         if for_each_node
-        else create_front(graph, regex)
+        else create_front(graph, regex, matrix_type)
     )
 
-    visited = csr_matrix(front.shape, dtype=bool)
+    visited = matrix_type(front.shape, dtype=bool)
     first_step = True
 
     while True:
@@ -35,7 +43,7 @@ def constraint_bfs(
                 step = numpy.dot(front, mtx)
             else:
                 step = numpy.dot(visited, mtx)
-            visited += transform_front(step, regex, for_each_node)
+            visited += transform_front(step, regex, for_each_node, matrix_type)
         first_step = False
 
         if old_visited_nnz == visited.nnz:
@@ -62,25 +70,23 @@ def constraint_bfs(
     return result
 
 
-def create_front(graph, regex: BooleanFiniteAutomaton):
+def create_front(graph, regex: BooleanFiniteAutomaton, matrix_type):
     n = graph.number_of_states
     k = regex.number_of_states
 
-    front = sparse.lil_matrix((k, n + k))
+    front = matrix_type((k, n + k))
 
-    right_part = sparse.lil_array(
-        [[state in graph.start_states for state in graph.states]]
-    )
+    right_part = matrix_type([[state in graph.start_states for state in graph.states]])
 
     for _, index in regex.states_indices.items():
         front[index, index] = True
         front[index, k:] = right_part
 
-    return front.tocsr()
+    return front
 
 
-def transform_front(step: csr_matrix, regex, is_for_each_node):
-    result = csr_matrix(step.shape, dtype=bool)
+def transform_front(step, regex, is_for_each_node, matrix_type):
+    result = matrix_type(step.shape, dtype=bool)
     for row, col in zip(*step.nonzero()):
         if col < regex.number_of_states:
             right_row_part = step[row, regex.number_of_states :]

@@ -6,14 +6,18 @@ from project.dfa import build_min_dfa_for_regex
 from project.nfa_bool_matrices import BooleanFiniteAutomaton
 from project.reachability_function import *
 
+from scipy.sparse import lil_matrix
 
-def regular_path_querying(
+
+def tensor_rpq(
     graph: MultiDiGraph,
     regex: Regex,
-    start_states: set = None,
-    final_states: set = None,
+    start_nodes: set = None,
+    final_nodes: set = None,
+    for_each_node: bool = False,
+    matrix_type=lil_matrix,
 ):
-    nfa = build_nfa_for_graph(graph, start_states, final_states)
+    nfa = build_nfa_for_graph(graph, start_nodes, final_nodes)
     dfa = build_min_dfa_for_regex(regex)
 
     bool_matrix_for_graph = BooleanFiniteAutomaton(nfa)
@@ -24,7 +28,7 @@ def regular_path_querying(
     start_states = bool_matrix_intersected.get_start_states()
     final_states = bool_matrix_intersected.get_final_states()
 
-    transitive = bool_matrix_intersected.get_transitive_closure()
+    transitive = bool_matrix_intersected.get_transitive_closure(matrix_type)
 
     result = set()
 
@@ -46,9 +50,14 @@ def bfs_rpq(
     start_nodes: set = None,
     final_nodes: set = None,
     for_each_node: bool = False,
+    matrix_type=lil_matrix,
 ):
     graph_bool_matrix = BooleanFiniteAutomaton(
         build_nfa_for_graph(graph, start_nodes, final_nodes)
     )
+
     regex_bool_matrix = BooleanFiniteAutomaton(build_min_dfa_for_regex(regex))
-    return constraint_bfs(graph_bool_matrix, regex_bool_matrix, for_each_node)
+
+    return constraint_bfs(
+        graph_bool_matrix, regex_bool_matrix, for_each_node, matrix_type
+    )

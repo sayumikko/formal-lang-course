@@ -1,5 +1,6 @@
 from pyformlang.finite_automaton import NondeterministicFiniteAutomaton
 from scipy import sparse
+from scipy.sparse import csr_matrix, dok_matrix, lil_matrix, csc_matrix
 
 
 class BooleanFiniteAutomaton:
@@ -10,7 +11,9 @@ class BooleanFiniteAutomaton:
     states_indices: dict
     bool_matrices: dict
 
-    def __init__(self, nfa: NondeterministicFiniteAutomaton = None):
+    def __init__(
+        self, nfa: NondeterministicFiniteAutomaton = None, matrix_type=csr_matrix
+    ):
         if nfa is None:
             self.number_of_states = 0
             self.states = set()
@@ -27,9 +30,11 @@ class BooleanFiniteAutomaton:
             self.states_indices = {
                 state: index for (index, state) in enumerate(nfa.states)
             }
-            self.bool_matrices = self.build_bool_matrix_for_nfa(nfa)
+            self.bool_matrices = self.build_bool_matrix_for_nfa(nfa, matrix_type)
 
-    def build_bool_matrix_for_nfa(self, nfa: NondeterministicFiniteAutomaton):
+    def build_bool_matrix_for_nfa(
+        self, nfa: NondeterministicFiniteAutomaton, matrix_type
+    ):
         matrix = {}
         for first_state, transition in nfa.to_dict().items():
             for label, target_states in transition.items():
@@ -38,7 +43,7 @@ class BooleanFiniteAutomaton:
 
                 for state in target_states:
                     if label not in matrix:
-                        matrix[label] = sparse.dok_matrix(
+                        matrix[label] = matrix_type(
                             (self.number_of_states, self.number_of_states), dtype=bool
                         )
                     f = self.states_indices.get(first_state)
@@ -81,9 +86,9 @@ class BooleanFiniteAutomaton:
 
         return bool_fa
 
-    def get_transitive_closure(self):
+    def get_transitive_closure(self, matrix_type):
         if len(self.bool_matrices) == 0:
-            return sparse.dok_matrix((0, 0), dtype=bool)
+            return matrix_type((0, 0), dtype=bool)
 
         transitive_closure = sum(self.bool_matrices.values())
         prev = transitive_closure.nnz
