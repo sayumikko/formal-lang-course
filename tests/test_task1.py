@@ -22,15 +22,15 @@ def test_get_graph_info():
 
 def test_save_graph_in_file():
     graph = gm.make_two_cycle_graph(3, 3, ("1", "2"))
-    gm.save_graph_in_file("tests/GraphFile.dot", graph)
+    gm.save_graph_in_file("tests/test_files/GraphFile.dot", graph)
 
     assert filecmp.cmp(
-        "tests/GraphFile.dot",
-        "tests/expected_task1.dot",
+        "tests/test_files/GraphFile.dot",
+        "tests/test_files/expected_task1.dot",
         shallow=False,
     )
 
-    os.remove("tests/GraphFile.dot")
+    os.remove("tests/test_files/GraphFile.dot")
 
 
 def test_make_two_cycle_graph_test():
