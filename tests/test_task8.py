@@ -1,5 +1,5 @@
 from networkx import MultiDiGraph
-from pyformlang.cfg import CFG
+from pyformlang.cfg import CFG, Variable
 
 from project.context_free_grammar_module import get_cfg_from_file
 from project.hellings import cfpq
@@ -54,6 +54,55 @@ def test_simple_path():
     cfg = get_cfg_from_file("tests/test_files/expected_task8_1")
     res = cfpq(cfg, graph, {0}, {3})
 
+    assert res == {(0, 3)}
+
+
+def test_another_start_symbol():
+    graph = build_graph(
+        {0, 1, 2, 3},
+        [
+            (0, 1, {"label": "a"}),
+            (1, 2, {"label": "a"}),
+            (2, 3, {"label": "a"}),
+        ],
+    )
+
+    cfg = get_cfg_from_file("tests/test_files/expected_task8_3")
+    res = cfpq(cfg, graph, {0, 1, 2, 3}, {0, 1, 2, 3}, Variable("A"))
+    assert res == set()
+
+    cfg = get_cfg_from_file("tests/test_files/expected_task8_4")
+    res = cfpq(cfg, graph, {0, 1, 2, 3}, {0, 1, 2, 3}, Variable("A"))
+    assert res == {
+        (0, 1),
+        (0, 2),
+        (0, 3),
+        (1, 2),
+        (1, 3),
+        (2, 3),
+    }
+
+
+def test_without_starts_and_finals():
+    graph = build_graph(
+        {0, 1, 2, 3},
+        [
+            (0, 1, {"label": "a"}),
+            (1, 2, {"label": "b"}),
+            (2, 3, {"label": "c"}),
+        ],
+    )
+
+    cfg = get_cfg_from_file("tests/test_files/expected_task8_3")
+    res = cfpq(cfg, graph)
+    assert res == {(0, 1)}
+
+    cfg = get_cfg_from_file("tests/test_files/expected_task8_2")
+    res = cfpq(cfg, graph)
+    assert res == {(0, 2)}
+
+    cfg = get_cfg_from_file("tests/test_files/expected_task8_1")
+    res = cfpq(cfg, graph)
     assert res == {(0, 3)}
 
 
