@@ -75,8 +75,6 @@ def cfpq(
 
     hellings = hellings_closure(cfg, graph)
 
-    print(hellings)
-
     res = set()
     for v1, var, v2 in hellings:
         if var == start_symbol and v1 in start_nodes and v2 in final_nodes:

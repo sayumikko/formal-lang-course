@@ -18,7 +18,7 @@ def test_empty_graph():
         [],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_1")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_1")
     res = cfpq(cfg, graph, {0}, {1})
 
     assert res == set()
@@ -51,7 +51,7 @@ def test_simple_path():
         ],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_1")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_1")
     res = cfpq(cfg, graph, {0}, {3})
 
     assert res == {(0, 3)}
@@ -67,11 +67,11 @@ def test_another_start_symbol():
         ],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_3")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_3")
     res = cfpq(cfg, graph, {0, 1, 2, 3}, {0, 1, 2, 3}, Variable("A"))
     assert res == set()
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_4")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_4")
     res = cfpq(cfg, graph, {0, 1, 2, 3}, {0, 1, 2, 3}, Variable("A"))
     assert res == {
         (0, 1),
@@ -93,15 +93,15 @@ def test_without_starts_and_finals():
         ],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_3")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_3")
     res = cfpq(cfg, graph)
     assert res == {(0, 1)}
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_2")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_2")
     res = cfpq(cfg, graph)
     assert res == {(0, 2)}
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_1")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_1")
     res = cfpq(cfg, graph)
     assert res == {(0, 3)}
 
@@ -116,7 +116,7 @@ def test_all_starts_and_finals():
         ],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_3")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_3")
     res = cfpq(cfg, graph, {0, 1, 2, 3}, {0, 1, 2, 3})
 
     assert res == {
@@ -140,7 +140,7 @@ def test_all_starts_and_finals_cycled_graph():
         ],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_3")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_3")
     res = cfpq(cfg, graph, {0, 1, 2, 3}, {0, 1, 2, 3})
 
     assert res == {
@@ -177,7 +177,7 @@ def test_several_pathes():
         ],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_1")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_1")
     res1 = cfpq(cfg, graph, {0}, {0, 1, 2, 3, 4, 5, 6})
     res2 = cfpq(cfg, graph, {0, 7}, {0, 1, 2, 3, 4, 5})
 
@@ -197,7 +197,7 @@ def test_alternating_grammar():
         ],
     )
 
-    cfg = get_cfg_from_file("tests/test_files/expected_task8_2")
+    cfg = get_cfg_from_file("tests/test_files/expected_cfpq_tests_2")
 
     res = cfpq(cfg, graph, start_nodes={3})
     assert res == set()
