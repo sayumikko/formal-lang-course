@@ -112,3 +112,186 @@
 - Вадим Абзалов [@vdshk](https://github.com/vdshk)
 - Рустам Азимов [@rustam-azimov](https://github.com/rustam-azimov)
 - Екатерина Шеметова [@katyacyfra](https://github.com/katyacyfra)
+
+## Язык запросов к графам
+
+```
+prog = List<stmt>
+
+stmt =
+    bind of var * expr
+  | print of expr
+
+val =
+    String of string
+  | Int of int
+  | Bool of bool
+  | Graph of graph
+  | Labels of labels
+  | Vertices of vertices
+  | Edges of edges
+
+expr =
+    Var of var                   // переменные
+  | Val of val                   // константы
+  | Set_start of Set<val> * expr // задать множество стартовых состояний
+  | Set_final of Set<val> * expr // задать множество финальных состояний
+  | Add_start of Set<val> * expr // добавить состояния в множество стартовых
+  | Add_final of Set<val> * expr // добавить состояния в множество финальных
+  | Get_start of expr            // получить множество стартовых состояний
+  | Get_final of expr            // получить множество финальных состояний
+  | Get_reachable of expr        // получить все пары достижимых вершин
+  | Get_vertices of expr         // получить все вершины
+  | Get_edges of expr            // получить все рёбра
+  | Get_labels of expr           // получить все метки
+  | Map of lambda * expr         // классический map
+  | Filter of lambda * expr      // классический filter
+  | Load of expr                 // загрузка графа
+  | Intersect of expr * expr     // пересечение языков
+  | Concat of expr * expr        // конкатенация языков
+  | Union of expr * expr         // объединение языков
+  | Star of expr                 // замыкание языков (звезда Клини)
+  | Smb of expr                  // единичный переход
+  | Contains of expr * expr      // Вхождение элемента в множество
+  | Set of List<expr>            // Множество элементов
+
+lambda =
+    lambda = var * expr
+```
+
+## Конкретный синтаксис
+
+```
+prog --> (statement ENDOFLINE)*
+
+statement -->
+    var ASSIGN expr SEMICOLON
+  | 'print' expr SEMICOLON
+
+var --> init_letter var_string
+init_letter --> CHAR | '_'
+var_string --> (init_letter | DIGIT)*
+
+expr -->
+    LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
+  | var
+  | val
+  | map
+  | filter
+  | intersect
+  | concat
+  | union
+  | star
+  | contains
+
+lambda --> LEFT_CURLY_BRACE 'fun' var '->' expr RIGHT_CURLY_BRACE
+
+map --> 'map' LEFT_PARENTHESIS lambda COMMA expr RIGHT_PARENTHESIS
+
+filter --> 'filter' LEFT_PARENTHESIS lambda COMMA expr RIGHT_PARENTHESIS
+
+intersert --> 'intersect' LEFT_PARENTHESIS expr COMMA expr RIGHT_PARENTHESIS
+
+concat --> 'concat' LEFT_PARENTHESIS expr COMMA expr RIGHT_PARENTHESIS
+
+union --> 'union' LEFT_PARENTHESIS expr COMMA expr RIGHT_PARENTHESIS
+
+star --> LEFT_PARENTHESIS expr RIGHT_PARENTHESIS '*'
+
+contains --> expr 'in' set
+
+val -->
+    LEFT_PARENTHESIS val RIGHT_PARENTHESIS
+  | QUOTE string QUOTE
+  | INT
+  | BOOL
+  | graph
+  | labels
+  | vertices
+  | edges
+
+string --> (CHAR | INT | '.' | '?' | '*')*
+
+graph -->
+    'set_start' LEFT_PARENTHESIS vertices COMMA graph RIGHT_PARENTHESIS
+  | 'set_final' LEFT_PARENTHESIS vertices COMMA graph RIGHT_PARENTHESIS
+  | 'add_start' LEFT_PARENTHESIS vertices COMMA graph RIGHT_PARENTHESIS
+  | 'add_final' LEFT_PARENTHESIS vertices COMMA graph RIGHT_PARENTHESIS
+  | 'get_graph' LEFT_PARENTHESIS path RIGHT_PARENTHESIS
+  | var
+
+path --> QUOTE string QUOTE | var
+
+vertices -->
+    'get_start' LEFT_PARENTHESIS graph RIGHT_PARENTHESIS
+  | 'get_final' LEFT_PARENTHESIS graph RIGHT_PARENTHESIS
+  | 'get_reachable' LEFT_PARENTHESIS graph RIGHT_PARENTHESIS
+  | 'get_vertices' LEFT_PARENTHESIS graph RIGHT_PARENTHESIS
+  | set
+  | var
+
+labels --> 'get_labels' LEFT_PARENTHESIS graph RIGHT_PARENTHESIS | set
+
+edges --> 'get_edges' LEFT_PARENTHESIS graph RIGHT_PARENTHESIS | set
+
+set --> LEFT_CURLY_BRACE expr (COMMA expr)* RIGHT_CURLY_BRACE
+  | 'set()'
+  | LEFT_CURLY_BRACE ( LEFT_PARENTHESIS INT COMMA (val | var) COMMA INT RIGHT_PARENTHESIS )* RIGHT_CURLY_BRACE
+
+ASSIGN ---> '='
+BOOL --> 'true' | 'false'
+CHAR --> [a-z] | [A-Z]
+COMMA --> ','
+DIGIT --> [0-9]
+ENDOFLINE --> [\n]
+INT --> '0' | '-'? [1-9][0-9]*
+LEFT_CURLY_BRACE --> '{'
+LEFT_PARENTHESIS --> '('
+QUOTE --> '"'
+RIGHT_CURLY_BRACE --> '}'
+RIGHT_PARENTHESIS --> ')'
+SEMICOLON --> ';'
+```
+
+## Примеры
+
+### Загрузка графа и простейшая работа с ним
+```
+graph = get_graph("some/path"); // Загрузка графа по пути
+vertices = get_vertices(graph); // Взятие вершин загруженного графа
+graph_upd = set_start(vertices, graph); // Назначение всех вершин стартовыми
+print vertices; // Печать меток
+```
+
+### Работа с регулярными запросами
+```
+a = union ("A", "a"); // Объединение двух регулярных запросов
+b = (union ("B", b))*; // Объединение двух регулярных запросов
+print concat (a, b); // Конкатенация регулярных запросов и их печать
+```
+
+### Работа с вершинами графа
+```
+graph = get_graph("some/path"); // Загрузка графа по пути
+graph = set_start(get_vertices(graph), graph); // Установка всех вершин графа стартовыми
+graph = add_final(set(2, 3), graph); // Установка множества вершин финальными
+print get_final(graph); // Печать результата
+```
+
+### Работа с функциями
+```
+graph = get_graph("some/path"); // Загрузка графа по пути
+new_graph = get_graph("another/path"); // Загрузка графа по пути
+v = get_vertices(graph); // Получение вершин графа
+result = map({fun vert -> add_start(vert, new_graph)}, v); // Добавление вершин первого графа как стартовых в новом графе
+filtered = filter({fun x -> x in {1, 2, 3}}, result); // Фильтрация вершин
+print result; // Печать результата
+```
+
+### Пересечение графа с регулярным запросом
+```
+graph = get_graph("some/path"); // Загрузка графа по пути
+query = "a*b"; // Создание регулярного запроса
+result = intersect(graph, query); // Выполнение пересечения
+print result; // Печать результата
+```
